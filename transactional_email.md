@@ -26,7 +26,7 @@ Plus, there are tons of free and 'freemium' emails servers out there, making it 
 
 # Which email provider should I use for my business?
 
-- Use an end-to-end encrypted/zero knowledge service.
+- Use an end-to-end encrypted service.
 I use [Protonmail](https://protonmail.com) which is incidentally [HIPAA compliant](https://protonmail.com/hippa-compliance).
 
 - Any email provider which doesn't use end-to-end encryption will eventually get hacked. Note that [hushmail](https://hushmail.com) is not end-to-end encrypted.
@@ -181,7 +181,7 @@ This will go directly to the spam box.
 
 ## Defense as an email originator:
 
-- Set the [SPF](https://en.wikipedia.org/wiki/Sender_Policy_Framework), [DKIM](https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail), and [DMARK](https://en.wikipedia.org/wiki/DMARC) DNS entries.
+- Set the [SPF](https://en.wikipedia.org/wiki/Sender_Policy_Framework), [DKIM](https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail), and [DMARC](https://en.wikipedia.org/wiki/DMARC) DNS entries.
 
 ---
 
@@ -203,6 +203,8 @@ $ dig ycombinator.com TXT +short
 $ dig bandgap.io TXT +short
 "v=spf1 include:_spf.protonmail.ch include:sendgrid.net mx ~all"
 "protonmail-verification=6b34252054d7c60d3831e1b957c7561bb0d60adb"
+$ dig example.com TXT +short
+"v=spf1 -all"
 ```
 
 ---
@@ -325,7 +327,7 @@ $ dig bandgap.io TXT +short
 
 DKIM is an email authentication method which attaches a digital signature to a sent email.
 
-Recepients check the digital signature of a message in the DNS entry of the host.
+Recipients check the digital signature of a message in the DNS entry of the host.
 
 ---
 
@@ -473,7 +475,7 @@ The other services are probably fine.
 
 ## sendgrid.com: STMP vs Web API
 
-Most transactional email providers allow both a web API and SMPT access.
+Most transactional email providers allow both a web API and SMTP access.
 
 We'll use the Web API, because of the following [annoying feature of gcloud](https://cloud.google.com/compute/docs/tutorials/sending-mail/):
 
@@ -564,3 +566,22 @@ u38641375.wl226.sendgrid.net.
 These are simply first steps you must take to keep your transactional emails out of the spam box.
 
 If you spam people, your reputation will drop dramatically and you'll wind up in the spam box no matter how authenticated you are.
+
+
+---
+
+# Help me
+
+If you send email only rarely, it takes forever. So you don't want to block. Here's a simple way around it:
+
+```python
+import threading
+from django.core.mail import EmailMessage
+mail = EmailMessage('Subject', 'Body', 'from@example.com', ['to@example.com'])
+mail_thread = threading.Thread(target=mail.send)
+mail_thread.start
+```
+
+But now exceptions are not passed back to the main thread! How to avoid it?
+
+---
